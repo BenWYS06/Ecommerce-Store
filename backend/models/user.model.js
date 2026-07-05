@@ -39,16 +39,41 @@ const userSchema = new mongoose.Schema(
       default: "customer",
     },
 
+    provider: {
+      type: String,
+      enum: ["local", "google", "github", "facebook"],
+      default: "local",
+    },
+
+    googleId: {
+      type: String,
+      default: "",
+    },
+
+    githubId: {
+      type: String,
+      default: "",
+    },
+
+    facebookId: {
+      type: String,
+      default: "",
+    },
+
     cartItems: [
       {
         product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
         },
+
+        size: String,
+
+        color: String,
+
         quantity: {
           type: Number,
           default: 1,
-          min: 1,
         },
       },
     ],

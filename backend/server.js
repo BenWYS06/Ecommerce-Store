@@ -10,6 +10,8 @@ import couponRoutes from "./routes/coupon.route.js";
 import paymentRoutes from "./routes/payment.route.js";
 import analyticsRoutes from "./routes/analytics.route.js";
 
+import passport from "./config/passport.js";
+
 import { connectDB } from "./lib/db.js";
 
 dotenv.config();
@@ -21,6 +23,8 @@ const __dirname = path.resolve();
 
 app.use(express.json({ limit: "10mb" })); // allows you to parse the body of the request
 app.use(cookieParser());
+
+app.use(passport.initialize());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
