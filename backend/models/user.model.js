@@ -19,8 +19,9 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: [true, "Password is required"],
-      minlength: 6,
+      required: function () {
+        return this.provider === "local";
+      },
     },
 
     phone: {
@@ -113,15 +114,18 @@ const userSchema = new mongoose.Schema(
 
 // Hash password
 userSchema.pre("save", async function (next) {
+  if (this.provider !== "local") return next();
+
   if (!this.isModified("password")) return next();
 
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (error) {
-    next(error);
+  if (!this.password || this.password.length < 6) {
+    return next(new Error("Password must be at least 6 characters"));
   }
+
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+
+  next();
 });
 
 // Compare password
