@@ -155,7 +155,7 @@ export const getProfile = async (req, res) => {
   }
 };
 
-export const googleCallback = async (req, res) => {
+export const OAuthCallback = async (req, res) => {
   try {
     const user = req.user;
 

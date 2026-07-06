@@ -8,7 +8,7 @@ import {
 } from "../controllers/auth.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 import passport from "../config/passport.js";
-import { googleCallback } from "../controllers/auth.controller.js";
+import { OAuthCallback } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
@@ -17,6 +17,7 @@ router.post("/login", login);
 router.post("/logout", logout);
 router.post("/refresh-token", refreshToken);
 router.get("/profile", protectRoute, getProfile);
+// Google
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -29,7 +30,39 @@ router.get(
   passport.authenticate("google", {
     session: false,
   }),
-  googleCallback,
+  OAuthCallback,
+);
+
+// Facebook
+router.get(
+  "/facebook",
+  passport.authenticate("facebook", {
+    scope: ["email"],
+  }),
+);
+
+router.get(
+  "/facebook/callback",
+  passport.authenticate("facebook", {
+    session: false,
+  }),
+  OAuthCallback,
+);
+
+// GitHub
+router.get(
+  "/github",
+  passport.authenticate("github", {
+    scope: ["user:email"],
+  }),
+);
+
+router.get(
+  "/github/callback",
+  passport.authenticate("github", {
+    session: false,
+  }),
+  OAuthCallback,
 );
 
 export default router;
