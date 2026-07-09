@@ -9,6 +9,8 @@ import {
 import { protectRoute } from "../middleware/auth.middleware.js";
 import passport from "../config/passport.js";
 import { OAuthCallback } from "../controllers/auth.controller.js";
+import upload from "../middleware/multer.middleware.js";
+import { updateAvatar } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 
@@ -16,6 +18,7 @@ router.post("/signup", signup);
 router.post("/login", login);
 router.post("/logout", logout);
 router.post("/refresh-token", refreshToken);
+router.put("/avatar", protectRoute, upload.single("avatar"), updateAvatar);
 router.get("/profile", protectRoute, getProfile);
 // Google
 router.get(

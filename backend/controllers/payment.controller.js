@@ -36,10 +36,11 @@ export const createCheckoutSession = async (req, res) => {
 
     let coupon = null;
     let discountAmount = 0;
+
     if (couponCode) {
       coupon = await Coupon.findOne({
         code: couponCode,
-        userId: req.user._id,
+        user: req.user._id,
         isActive: true,
       });
       if (coupon) {
@@ -128,12 +129,10 @@ export const checkoutSuccess = async (req, res) => {
       .json({ success: false, message: "Payment is not completed." });
   } catch (error) {
     console.error("Error processing successful checkout:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error processing successful checkout",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error processing successful checkout",
+      error: error.message,
+    });
   }
 };
 
@@ -174,13 +173,13 @@ async function createStripeCoupon(discountPercentage) {
 }
 
 async function createNewCoupon(userId) {
-  await Coupon.findOneAndDelete({ userId });
+  await Coupon.findOneAndDelete({ user: userId });
 
   const newCoupon = new Coupon({
     code: "GIFT" + Math.random().toString(36).substring(2, 8).toUpperCase(),
     discountPercentage: 10,
     expirationDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-    userId: userId,
+    user: userId,
   });
 
   await newCoupon.save();
@@ -199,7 +198,7 @@ async function createOrderFromCheckoutSession(session) {
     await Coupon.findOneAndUpdate(
       {
         code: session.metadata.couponCode,
-        userId: session.metadata.userId,
+        user: session.metadata.userId,
       },
       {
         isActive: false,
@@ -228,9 +227,18 @@ async function createOrderFromCheckoutSession(session) {
     stripeSessionId: session.id,
   });
 
-  await User.findByIdAndUpdate(session.metadata.userId, {
-    $set: { cartItems: [] },
+  const user = await User.findById(session.metadata.userId);
+
+  user.cartItems = user.cartItems.filter((cartItem) => {
+    return !products.some(
+      (product) =>
+        cartItem.product.toString() === product.id &&
+        cartItem.size === product.size &&
+        cartItem.color === product.color,
+    );
   });
+
+  await user.save();
 
   return order;
 }

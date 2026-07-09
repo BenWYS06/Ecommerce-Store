@@ -18,7 +18,7 @@ const recalculateProductRating = async (productId) => {
       rating: Number(rating.toFixed(1)),
       numReviews,
     },
-    { new: true },
+    { new: true }, // if don't have it will return old product
   );
 
   return product;
