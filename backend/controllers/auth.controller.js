@@ -1,6 +1,8 @@
 import { redis } from "../lib/redis.js";
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import cloudinary from "../lib/cloudinary.js";
+import streamifier from "streamifier";
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
@@ -152,6 +154,67 @@ export const getProfile = async (req, res) => {
     res.json(req.user);
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const updateAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload an image",
+      });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Delete old Cloudinary image
+    if (user.avatar.public_id) {
+      await cloudinary.uploader.destroy(user.avatar.public_id);
+    }
+
+    // Upload new image
+    const uploadResult = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "avatars",
+        },
+        (error, result) => {
+          if (error) return reject(error);
+
+          resolve(result);
+        },
+      );
+
+      streamifier.createReadStream(req.file.buffer).pipe(stream);
+    });
+
+    user.avatar = {
+      public_id: uploadResult.public_id,
+      url: uploadResult.secure_url,
+    };
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Avatar updated successfully",
+      user,
+    });
+  } catch (error) {
+    console.dir(error, { depth: null });
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 

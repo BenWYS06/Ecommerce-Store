@@ -25,8 +25,8 @@ passport.use(
           if (user) {
             user.googleId = profile.id;
             user.provider = "google";
-            if (!user.avatar) {
-              user.avatar = profile.photos?.[0]?.value || "";
+            if (!user.avatar.url) {
+              user.avatar.url = profile.photos?.[0]?.value || "";
             }
 
             await user.save();
@@ -34,7 +34,11 @@ passport.use(
             user = await User.create({
               name: profile.displayName,
               email: profile.emails[0].value,
-              avatar: profile.photos?.[0]?.value || "",
+              avatar: {
+                public_id: null,
+                url: profile.photos[0].value || "",
+              },
+
               googleId: profile.id,
               provider: "google",
             });
@@ -75,8 +79,8 @@ passport.use(
             user.githubId = profile.id;
             user.provider = "github";
 
-            if (!user.avatar) {
-              user.avatar = profile.photos?.[0]?.value || "";
+            if (!user.avatar.url) {
+              user.avatar.url = profile.photos?.[0]?.value || "";
             }
 
             await user.save();
@@ -84,7 +88,10 @@ passport.use(
             user = await User.create({
               name: profile.displayName || profile.username,
               email,
-              avatar: profile.photos?.[0]?.value || "",
+              avatar: {
+                public_id: null,
+                url: profile.photos[0].value || "",
+              },
               githubId: profile.id,
               provider: "github",
             });
@@ -126,8 +133,8 @@ passport.use(
             user.facebookId = profile.id;
             user.provider = "facebook";
 
-            if (!user.avatar) {
-              user.avatar = profile.photos?.[0]?.value || "";
+            if (!user.avatar.url) {
+              user.avatar.url = profile.photos?.[0]?.value || "";
             }
 
             await user.save();
@@ -135,7 +142,10 @@ passport.use(
             user = await User.create({
               name: profile.displayName,
               email: email || "",
-              avatar: profile.photos?.[0]?.value || "",
+              avatar: {
+                public_id: null,
+                url: profile.photos[0].value || "",
+              },
               facebookId: profile.id,
               provider: "facebook",
             });
