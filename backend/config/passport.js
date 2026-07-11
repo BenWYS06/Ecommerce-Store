@@ -3,6 +3,7 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Strategy as FacebookStrategy } from "passport-facebook";
 import { Strategy as GithubStrategy } from "passport-github2";
 import User from "../models/user.model.js";
+import { createWelcomeCoupon } from "../lib/coupon.js";
 
 passport.use(
   new GoogleStrategy(
@@ -42,6 +43,8 @@ passport.use(
               googleId: profile.id,
               provider: "google",
             });
+
+            await createWelcomeCoupon(user._id);
           }
         }
 
@@ -95,6 +98,8 @@ passport.use(
               githubId: profile.id,
               provider: "github",
             });
+
+            await createWelcomeCoupon(user._id);
           }
         }
 
@@ -149,6 +154,8 @@ passport.use(
               facebookId: profile.id,
               provider: "facebook",
             });
+
+            await createWelcomeCoupon(user._id);
           }
         }
 

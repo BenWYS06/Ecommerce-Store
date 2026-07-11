@@ -3,6 +3,9 @@ import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
 import cloudinary from "../lib/cloudinary.js";
 import streamifier from "streamifier";
+import Coupon from "../models/coupon.model.js";
+import { sendWelcomeAccountEmail } from "../emails/emailHandlers.js";
+import { createWelcomeCoupon } from "../lib/coupon.js";
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
@@ -48,13 +51,25 @@ export const signup = async (req, res) => {
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
-    const user = await User.create({ name, email, password });
+    const user = await User.create({
+      name,
+      email,
+      password,
+    });
+
+    await createWelcomeCoupon(user._id);
 
     // authenticate
     const { accessToken, refreshToken } = generateTokens(user._id);
     await storeRefreshToken(user._id, refreshToken);
 
     setCookies(res, accessToken, refreshToken);
+
+    await sendWelcomeAccountEmail(
+      user.email,
+      user.name,
+      process.env.CLIENT_URL,
+    );
 
     res.status(201).json({
       _id: user._id,
