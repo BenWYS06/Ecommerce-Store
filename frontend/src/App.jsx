@@ -17,7 +17,6 @@ import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
 import AdminLayout from "./layout/AdminLayout";
 import PublicLayout from "./layout/PublicLayout";
-import { useState } from "react";
 import Dashboard from "./admin/scenes/dashboard";
 import Team from "./admin/scenes/team";
 import Invoices from "./admin/scenes/invoices";
@@ -48,6 +47,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-white-900 text-white relative overflow-hidden">
+      <ScrollToTop />
       <div className="relative mt-20">
         <Routes>
           <Route element={<PublicLayout />}>

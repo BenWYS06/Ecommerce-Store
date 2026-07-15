@@ -61,7 +61,7 @@ export default function Navbar() {
 
   const handleAvatarUpload = async (formData) => {
     try {
-      const data = await updateAvatar(formData);
+      await updateAvatar(formData);
     } catch (error) {
       console.error(error);
     }
