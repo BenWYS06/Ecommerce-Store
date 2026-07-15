@@ -1,5 +1,3 @@
-import React from "react";
-
 const SectionTitle = ({ title, subtitle }) => {
   return (
     <div className="mb-10 text-center">
