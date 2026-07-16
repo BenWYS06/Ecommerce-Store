@@ -2,6 +2,11 @@ import Coupon from "../models/coupon.model.js";
 import Order from "../models/order.model.js";
 import User from "../models/user.model.js";
 import { stripe } from "../lib/stripe.js";
+import {
+  calculateDiscountAmount,
+  calculateSubtotalAmount,
+  getEffectivePrice,
+} from "../lib/checkoutPricing.js";
 
 const SHIPPING_FEE = 10;
 
@@ -13,13 +18,11 @@ export const createCheckoutSession = async (req, res) => {
       return res.status(400).json({ error: "Invalid or empty products array" });
     }
 
-    let subtotalAmount = 0;
+    const subtotalAmount = calculateSubtotalAmount(products);
 
     const lineItems = products.map((product) => {
-      const price =
-        product.discountPrice > 0 ? product.discountPrice : product.price;
+      const price = getEffectivePrice(product);
       const amount = Math.round(price * 100); // stripe wants cents
-      subtotalAmount += amount * product.quantity;
 
       return {
         price_data: {
@@ -44,8 +47,9 @@ export const createCheckoutSession = async (req, res) => {
         isActive: true,
       });
       if (coupon) {
-        discountAmount = Math.round(
-          (subtotalAmount * coupon.discountPercentage) / 100,
+        discountAmount = calculateDiscountAmount(
+          subtotalAmount,
+          coupon.discountPercentage,
         );
       }
     }
@@ -85,7 +89,7 @@ export const createCheckoutSession = async (req, res) => {
           products.map((p) => ({
             id: p._id,
             quantity: p.quantity,
-            price: p.discountPrice > 0 ? p.discountPrice : p.price,
+            price: getEffectivePrice(p),
             size: p.size || "",
             color: p.color || "",
           })),
